@@ -1,0 +1,44 @@
+services:
+  api:
+    build: ./api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_NAME=examdb
+    depends_on:
+      - db
+    networks:
+      - backend
+
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./web:/usr/share/nginx/html
+    depends_on:
+      - api
+    networks:
+      - frontend
+      - backend
+
+  db:
+    image: mongo:6.0
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=examen123
+      - MONGO_INITDB_DATABASE=examdb
+    volumes:
+      - db-data:/data/db
+    restart: unless-stopped
+    networks:
+      - backend
+
+networks:
+  frontend:
+  backend:
+
+volumes:
+  db-data:

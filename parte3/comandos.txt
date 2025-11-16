@@ -1,0 +1,58 @@
+# ========================================
+# Parte 3 – Comandos Docker Compose
+# ========================================
+
+1) Levantar el stack completo:
+Comando:
+  docker-compose up -d --build
+Salida:
+  [+] Building 1.9s (13/13) FINISHED
+  ✔ parte3-api Built
+  ✔ Network parte3_frontend Created
+  ✔ Network parte3_backend Created
+  ✔ Volume parte3_db-data Created
+  ✔ Container parte3-db-1 Started
+  ✔ Container parte3-api-1 Started
+  ✔ Container parte3-web-1 Started
+
+2) Verificar que los servicios están corriendo:
+Comando:
+  docker-compose ps
+Salida:
+NAME           IMAGE          COMMAND                  SERVICE   CREATED         STATUS         PORTS
+parte3-api-1   parte3-api     "docker-entrypoint.…"   api       6 seconds ago   Up 5 seconds   0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp
+parte3-db-1    mongo:6.0      "docker-entrypoint.…"   db        7 seconds ago   Up 6 seconds   27017/tcp
+parte3-web-1   nginx:alpine   "/docker-entrypoint.…"   web       6 seconds ago   Up 5 seconds   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
+3) Probar la API:
+Comando:
+  curl http://localhost:3000/
+Salida:
+  {"mensaje":"API funcionando","db":"db"}
+
+Comando:
+  curl http://localhost:3000/salud
+Salida:
+  {"status":"ok"}
+
+4) Ver logs de los servicios:
+Comando:
+  docker-compose logs --tail=20
+Salida (fragmento):
+  api-1  | API corriendo en http://localhost:3000
+  db-1   | {"t":{"$date":"2025-11-16T00:22:47.118+00:00"},"s":"I","c":"NETWORK","msg":"Waiting for connections","attr":{"port":27017,"ssl":"off"}}
+  web-1  | /docker-entrypoint.sh: Configuration complete; ready for start up
+
+5) Detener y limpiar todo:
+Comando:
+  docker-compose down -v
+Salida:
+  ✔ Container parte3-web-1 Removed
+  ✔ Container parte3-api-1 Removed
+  ✔ Container parte3-db-1 Removed
+  ✔ Network parte3_frontend Removed
+  ✔ Volume parte3_db-data Removed
+  ✔ Network parte3_backend Removed
+
+# ========================================
+# Fin de Parte 3
+# ========================================

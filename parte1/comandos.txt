@@ -1,0 +1,117 @@
+# ========================================
+# Parte 1 – Comandos Docker CLI
+# ========================================
+
+## Ejercicio 1.1: Gestión de Contenedores (nginx)
+
+1) Descargar imagen oficial nginx:alpine
+Comando:
+  docker pull nginx:alpine
+Salida:
+  alpine: Pulling from library/nginx
+  Digest: sha256:b3c656d55d7ad751196f21b7fd2e8d4da9cb430e32f646adcf92441b72f82b14
+  Status: Image is up to date for nginx:alpine
+  docker.io/library/nginx:alpine
+
+2) Crear y ejecutar contenedor web-examen (puerto host 8080 -> contenedor 80, modo detached)
+Comando:
+  docker run -d -p 8080:80 --name web-examen nginx:alpine
+Salida:
+  2e987aaf6a5f24576cb01cfe894a592a89241602b70d716bcdffe042c87ff929
+
+3) Verificar que el contenedor está corriendo
+Comando:
+  docker ps --filter name=web-examen
+Salida:
+  CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS          PORTS                                     NAMES
+  2e987aaf6a5f   nginx:alpine   "/docker-entrypoint.…"   14 seconds ago   Up 13 seconds   0.0.0.0:8080->80/tcp, [::]:8080->80/tcp   web-examen
+
+4) Obtener logs del contenedor
+Comando:
+  docker logs web-examen --tail 20
+Salida (fragmento):
+  /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+  /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+  2025/11/15 22:53:15 [notice] 1#1: nginx/1.29.3
+  2025/11/15 22:53:15 [notice] 1#1: start worker process 31
+
+5) Inspeccionar el contenedor y obtener su IP
+Comando:
+  docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' web-examen
+Salida:
+  172.17.0.2
+
+6) Detener y eliminar el contenedor
+Comandos:
+  docker stop web-examen
+  docker rm web-examen
+Salida:
+  web-examen
+  web-examen
+
+---
+
+## Ejercicio 1.2: Volúmenes y Persistencia (PostgreSQL)
+
+1) Crear volumen llamado datos-examen
+Comando:
+  docker volume create datos-examen
+Salida:
+  datos-examen
+
+2) Ejecutar contenedor postgres:15-alpine con volumen y variables
+Comando:
+  docker run -d --name db-examen -e POSTGRES_PASSWORD=examen123 -e POSTGRES_DB=testdb -v datos-examen:/var/lib/postgresql/data -p 5432:5432 postgres:15-alpine
+Salida:
+  91d0ed4ea45aeac145083529c206d6d521e97be2026c32766263e57b2e3247c1
+
+3) Verificar que inició correctamente
+Comandos:
+  docker ps --filter name=db-examen
+  docker logs db-examen --tail 20
+Salida:
+  CONTAINER ID   IMAGE                COMMAND                  CREATED         STATUS         PORTS                                         NAMES
+  91d0ed4ea45a   postgres:15-alpine   "docker-entrypoint.…"   8 minutes ago   Up 8 minutes   0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp   db-examen
+  LOG:  database system is ready to accept connections
+
+4) Crear datos para verificar persistencia
+Comandos:
+  docker exec -e PGPASSWORD=examen123 db-examen psql -U postgres -d testdb -c "CREATE TABLE IF NOT EXISTS demo (id SERIAL PRIMARY KEY, nombre TEXT);"
+  docker exec -e PGPASSWORD=examen123 db-examen psql -U postgres -d testdb -c "INSERT INTO demo (nombre) VALUES ('persistencia');"
+  docker exec -e PGPASSWORD=examen123 db-examen psql -U postgres -d testdb -c "SELECT COUNT(*) AS total FROM demo;"
+Salida:
+  CREATE TABLE
+  INSERT 0 1
+   total 
+  -------
+       1
+  (1 row)
+
+5) Detener y eliminar el contenedor, recrearlo y validar persistencia
+Comandos:
+  docker stop db-examen
+  docker rm db-examen
+  docker run -d --name db-examen -e POSTGRES_PASSWORD=examen123 -e POSTGRES_DB=testdb -v datos-examen:/var/lib/postgresql/data -p 5432:5432 postgres:15-alpine
+  docker exec -e PGPASSWORD=examen123 db-examen psql -U postgres -d testdb -c "SELECT COUNT(*) AS total FROM demo;"
+Salida:
+   total 
+  -------
+       1
+  (1 row)
+
+6) Comandos de estado generales
+Comandos:
+  docker ps -a
+  docker volume ls
+Salida (fragmento):
+  CONTAINER ID   IMAGE                COMMAND                  CREATED         STATUS         PORTS                      NAMES
+  50091c1a2248   postgres:15-alpine   "docker-entrypoint…"    2 minutes ago   Up 2 minutes   0.0.0.0:5432->5432/tcp      db-examen
+  DRIVER    VOLUME NAME
+  local     datos-examen
+
+# ========================================
+# Fin de Parte 1
+# ========================================
+
+
+

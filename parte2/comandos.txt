@@ -1,19 +1,35 @@
+docker build -t mi-app-python:examen .
 Parte 2: Comandos para construir y ejecutar la aplicación Python
 
 1) Construir la imagen Docker:
 Comando:
-cd parte2
-docker build -t mi-app-python:examen .
+  cd parte2
+  docker build -t mi-app-python:examen .
+Salida (resumen):
+  [+] Building 1.5s (12/12) FINISHED
+  => naming to docker.io/library/mi-app-python:examen
+
 2) Ejecutar el contenedor:
 Comando:
   docker run -d -p 5000:5000 --name app-examen mi-app-python:examen
+Salida:
+  3df6561b88db9ae6124a3b71e2cfcbadbd5080c981b390afb52ce77f7d7a3143
 
 3) Verificar que la aplicación funciona:
 Comandos:
+  docker ps --filter name=app-examen
   curl http://localhost:5000/
   curl http://localhost:5000/salud
+Salida (resumen):
+  CONTAINER ID   IMAGE                  COMMAND           STATUS         PORTS
+  3df6561b88db   mi-app-python:examen   "python app.py"   Up             0.0.0.0:5000->5000/tcp
+  {"estudiante":"Moran","mensaje":"Examen Docker"}
+  {"status":"ok"}
 
 4) Detener y eliminar el contenedor:
 Comandos:
   docker stop app-examen
   docker rm app-examen
+Salida:
+  app-examen
+  app-examen

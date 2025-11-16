@@ -5,11 +5,16 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return jsonify({"mensaje": "Examen Docker", "estudiante": "Moran"})
+    respuesta = {
+        "mensaje": "Examen Docker - revisión personal Moran",
+        "estudiante": "Moran",
+        "comentario": "Validación manual 2025-11-15"
+    }
+    return jsonify(respuesta)
 
 @app.route('/salud')
 def salud():
-    return jsonify({"status": "ok"})
+    return jsonify({"status": "ok", "nota": "Chequeo rápido antes de entrega"})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
